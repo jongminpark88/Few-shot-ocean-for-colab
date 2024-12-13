@@ -39,7 +39,7 @@ def setup_run(arg_mode='train'):
     elif args.dataset == 'dogs':
         args.num_class = 70
     elif args.dataset == 'ocean':
-        args.num_class = 10
+        args.num_class = 9
 
     return args
 
