@@ -124,3 +124,5 @@ datasets/*.tar
 # records
 wandb/*
 
+checkpoints.zip
+cifar_fs.tar
