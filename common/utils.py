@@ -38,6 +38,8 @@ def setup_run(arg_mode='train'):
         args.num_class = 130
     elif args.dataset == 'dogs':
         args.num_class = 70
+    elif args.dataset == 'ocean':
+        args.num_class = 10
 
     return args
 
@@ -46,10 +48,10 @@ def set_gpu(args):
     if args.gpu == '-1':
         gpu_list = [int(x) for x in os.environ['CUDA_VISIBLE_DEVICES'].split(',')]
     else:
-        gpu_list = [int(x) for x in args.gpu.split(',')]
+        gpu_list = [0]
         print('use gpu:', gpu_list)
         os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
-        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     return gpu_list.__len__()
 
 
@@ -133,7 +135,7 @@ def parse_args(arg_mode):
 
     ''' about dataset '''
     parser.add_argument('-dataset', type=str, default='miniimagenet',
-                        choices=['miniimagenet', 'cub', 'tieredimagenet', 'cifar_fs'])
+                        choices=['miniimagenet', 'cub', 'tieredimagenet', 'cifar_fs','ocean'])
     parser.add_argument('-data_dir', type=str, default='datasets', help='dir of datasets')
 
     ''' about training specs '''
@@ -149,7 +151,7 @@ def parse_args(arg_mode):
     parser.add_argument('-save_all', action='store_true', help='save models on each epoch')
 
     ''' about few-shot episodes '''
-    parser.add_argument('-way', type=int, default=5, metavar='N', help='number of few-shot classes')
+    parser.add_argument('-way', type=int, default=3, metavar='N', help='number of few-shot classes')
     parser.add_argument('-shot', type=int, default=1, metavar='K', help='number of shots')
     parser.add_argument('-query', type=int, default=15, help='number of query image per class')
     parser.add_argument('-val_episode', type=int, default=200, help='number of validation episode')

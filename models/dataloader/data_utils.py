@@ -12,6 +12,8 @@ def dataset_builder(args):
         from models.dataloader.tiered_imagenet import tieredImageNet as Dataset
     elif args.dataset == 'cifar_fs':
         from models.dataloader.cifar_fs import DatasetLoader as Dataset
+    elif args.dataset == 'ocean':
+        from models.dataloader.ocean import DatasetLoader as Dataset
     else:
         raise ValueError('Unkown Dataset')
     return Dataset
