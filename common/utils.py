@@ -144,7 +144,7 @@ def parse_args(arg_mode):
     parser.add_argument('-lamb', type=float, default=0.25, metavar='lambda', help='loss balancing term')
 
     ''' about training schedules '''
-    parser.add_argument('-max_epoch', type=int, default=80, help='max epoch to run')
+    parser.add_argument('-max_epoch', type=int, default=120, help='max epoch to run')
     parser.add_argument('-lr', type=float, default=0.1, help='learning rate')
     parser.add_argument('-gamma', type=float, default=0.05, help='learning rate decay factor')
     parser.add_argument('-milestones', nargs='+', type=int, default=[60, 70], help='milestones for MultiStepLR')
