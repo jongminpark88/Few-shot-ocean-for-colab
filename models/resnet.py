@@ -331,7 +331,7 @@ class ResNet(nn.Module):
 
 
 #단순화한 eff
-
+'''
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -414,21 +414,21 @@ class ResNet(nn.Module):
         x = self.blocks(x)
         x = self.final_resize(x)  # Resize to (Batch, 640, 6, 6)
         return x
-
+'''
 
 
 
 
 
 #effi_b7
-'''
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.models import efficientnet_b7
 
 class ResNet(nn.Module):
-    def __init__(self):
+    def __init__(self,args):
         super(ResNet, self).__init__()
         # Load EfficientNet-B7 model structure
         self.model = efficientnet_b7(pretrained=False)
@@ -437,6 +437,8 @@ class ResNet(nn.Module):
         self.model.features[0][0] = nn.Conv2d(3, self.model.features[0][0].out_channels,
                                               kernel_size=3, stride=1, padding=1, bias=False)
 
+        self.args=args
+        
         # Modify the final layers
         self.model.classifier = nn.Identity()  # Remove classification head
         self.model.avgpool = nn.Identity()  # Remove global average pooling
@@ -449,7 +451,7 @@ class ResNet(nn.Module):
         x = self.channel_reduction(x)  # Reduce channels to 640
         x = F.interpolate(x, size=(6, 6), mode='bilinear', align_corners=False)  # Resize to (6, 6)
         return x
-'''
+
 
 
 #clip
