@@ -249,9 +249,9 @@ class ResNet(nn.Module):
 
 
 
-'''
-#efficientnet
 
+#efficientnet
+'''
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -329,6 +329,97 @@ class ResNet(nn.Module):
         return x
 '''
 
+
+#단순화한 eff
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+# Depthwise Separable Convolution Block
+class DepthwiseSeparableConv(nn.Module):
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(DepthwiseSeparableConv, self).__init__()
+        self.conv = nn.Sequential(
+            # Depthwise Convolution
+            nn.Conv2d(in_channels, in_channels, kernel_size=3, stride=stride, padding=1, groups=in_channels, bias=False),
+            nn.BatchNorm2d(in_channels),
+            nn.SiLU(),
+            # Pointwise Convolution
+            nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False),
+            nn.BatchNorm2d(out_channels),
+            nn.SiLU()
+        )
+
+    def forward(self, x):
+        return self.conv(x)
+
+# Simplified EfficientNet-inspired Block
+class SimplifiedMBConv(nn.Module):
+    def __init__(self, in_channels, out_channels, stride=1, expand_ratio=4, use_se=False):
+        super(SimplifiedMBConv, self).__init__()
+        hidden_dim = in_channels * expand_ratio
+        self.use_residual = stride == 1 and in_channels == out_channels
+
+        self.expand = nn.Sequential(
+            nn.Conv2d(in_channels, hidden_dim, kernel_size=1, bias=False),
+            nn.BatchNorm2d(hidden_dim),
+            nn.SiLU()
+        ) if expand_ratio > 1 else nn.Identity()
+
+        self.depthwise_separable = DepthwiseSeparableConv(hidden_dim, out_channels, stride)
+
+        self.se = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(out_channels, out_channels // 4, kernel_size=1),
+            nn.SiLU(),
+            nn.Conv2d(out_channels // 4, out_channels, kernel_size=1),
+            nn.Sigmoid()
+        ) if use_se else nn.Identity()
+
+    def forward(self, x):
+        identity = x
+        x = self.expand(x)
+        x = self.depthwise_separable(x)
+        if isinstance(self.se, nn.Sequential):  # If SE is enabled
+            x = x * self.se(x)
+        if self.use_residual:
+            return x + identity
+        return x
+
+# Simplified EfficientNet Model
+class ResNet(nn.Module):
+    def __init__(self, args):
+        super(ResNet, self).__init__()
+        self.stem = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(32),
+            nn.SiLU()
+        )
+
+        self.args=args
+
+        self.blocks = nn.Sequential(
+            SimplifiedMBConv(32, 64, stride=1, expand_ratio=1),  # Stage 1
+            SimplifiedMBConv(64, 128, stride=2),                # Stage 2
+            SimplifiedMBConv(128, 256, stride=2),               # Stage 3
+            SimplifiedMBConv(256, 512, stride=2),               # Stage 4
+            SimplifiedMBConv(512, 640, stride=2)                # Stage 5
+        )
+
+        # Final resizing to (6, 6)
+        self.final_resize = nn.AdaptiveAvgPool2d((6, 6))
+
+    def forward(self, x):
+        x = self.stem(x)
+        x = self.blocks(x)
+        x = self.final_resize(x)  # Resize to (Batch, 640, 6, 6)
+        return x
+
+
+
+
+
+
 #effi_b7
 '''
 import torch
@@ -361,18 +452,20 @@ class ResNet(nn.Module):
 '''
 
 
+#clip
+'''
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import open_clip
 
 class ResNet(nn.Module):
-    def __init__(self):
+    def __init__(self,args):
         super(ResNet, self).__init__()
         # Load pre-trained CLIP model (ViT-B/32 as the backbone)
         model, _, preprocess = open_clip.create_model_and_transforms('ViT-B/32', pretrained='openai')
         self.encoder = model.visual  # Use the visual encoder of CLIP
-
+        self.args=args
         # Add a Conv2d layer to adjust the channel dimension to 640
         self.channel_adjust = nn.Conv2d(512, 640, kernel_size=1, stride=1, bias=False)
 
@@ -399,7 +492,7 @@ class ResNet(nn.Module):
         # Resize output to (6, 6)
         x = F.interpolate(x, size=(6, 6), mode='bilinear', align_corners=False)
         return x
-
+'''
 
 
 
